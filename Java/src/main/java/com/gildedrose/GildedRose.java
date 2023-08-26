@@ -3,60 +3,87 @@ package com.gildedrose;
 class GildedRose {
     Item[] items;
 
+    final static String SULFURAS_HAND_HAGNAROS = "Sulfuras, Hand of Ragnaros";
+    final static String AGED_BRIE = "Aged Brie";
+    final static String BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert";
+    final static String CONJURED = "Conjured";
+
     public GildedRose(Item[] items) {
         this.items = items;
     }
 
-    public void updateQuality() {
-        for (int i = 0; i < items.length; i++) {
-            if (!items[i].name.equals("Aged Brie")
-                    && !items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                if (items[i].quality > 0) {
-                    if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                        items[i].quality = items[i].quality - 1;
-                    }
-                }
-            } else {
-                if (items[i].quality < 50) {
-                    items[i].quality = items[i].quality + 1;
+    private void treatSulfuras(Item item) {
+        item.quality = 80;
+    }
 
-                    if (items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                        if (items[i].sellIn < 11) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1;
-                            }
-                        }
-
-                        if (items[i].sellIn < 6) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                items[i].sellIn = items[i].sellIn - 1;
-            }
-
-            if (items[i].sellIn < 0) {
-                if (!items[i].name.equals("Aged Brie")) {
-                    if (!items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                        if (items[i].quality > 0) {
-                            if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                                items[i].quality = items[i].quality - 1;
-                            }
-                        }
-                    } else {
-                        items[i].quality = items[i].quality - items[i].quality;
-                    }
-                } else {
-                    if (items[i].quality < 50) {
-                        items[i].quality = items[i].quality + 1;
-                    }
-                }
-            }
+    private int getBackstagePassesAppreciationRate(Item item) {
+        if (item.sellIn <= 5) {
+            return 3;
+        } else if (item.sellIn <= 10) {
+            return 2;
+        } else {
+            return 1;
         }
     }
+
+    private void appreciateAgedBrie(Item item) {
+        alterItemQuality(item, 1);
+    }
+
+    private void appreciateBackstagePasses(Item item) {
+        if (item.sellIn <= 0) {
+            item.quality = 0;
+        } else {
+            alterItemQuality(item, getBackstagePassesAppreciationRate(item));
+        }
+    }
+
+    private void depreciateItemQuality(Item item, int factor) {
+        int qualityDepreciationRate = item.sellIn <= 0 ? (2 * factor) : factor;
+        alterItemQuality(item, -qualityDepreciationRate);
+    }
+
+    private void decreaseSellInDate(Item item) {
+        item.sellIn -= 1;
+    }
+
+    private void alterItemQuality(Item item, int rate) {
+        item.quality += rate;
+
+        if (item.quality > 50) {
+            item.quality = 50;
+        } else if (item.quality < 0) {
+            item.quality = 0;
+        }
+    }
+
+    public void updateQuality() {
+        for (Item item : items) {
+
+            if (item.name.equals(GildedRose.SULFURAS_HAND_HAGNAROS)) {
+                treatSulfuras(item);
+                continue;
+            }
+
+            if (item.quality > 0 && item.quality < 50) {
+                switch (item.name) {
+                    case GildedRose.AGED_BRIE:
+                        appreciateAgedBrie(item);
+                        break;
+                    case GildedRose.BACKSTAGE_PASSES:
+                        appreciateBackstagePasses(item);
+                        break;
+                    case GildedRose.CONJURED:
+                        depreciateItemQuality(item, 2);
+                        break;
+                    default:
+                        depreciateItemQuality(item, 1);
+                        break;
+            }
+                }
+
+            decreaseSellInDate(item);
+        }
+    }
+
 }
