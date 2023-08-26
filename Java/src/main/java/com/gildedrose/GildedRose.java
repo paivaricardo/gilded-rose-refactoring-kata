@@ -7,13 +7,16 @@ class GildedRose {
     final static String AGED_BRIE = "Aged Brie";
     final static String BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert";
     final static String CONJURED = "Conjured";
+    final static int MIN_QUALITY = 0;
+    final static int MAX_QUALITY = 50;
+    final static int SULFURAS_QUALITY = 80;
 
     public GildedRose(Item[] items) {
         this.items = items;
     }
 
     private void treatSulfuras(Item item) {
-        item.quality = 80;
+        item.quality = SULFURAS_QUALITY;
     }
 
     private int getBackstagePassesAppreciationRate(Item item) {
@@ -32,7 +35,7 @@ class GildedRose {
 
     private void appreciateBackstagePasses(Item item) {
         if (item.sellIn <= 0) {
-            item.quality = 0;
+            item.quality = MIN_QUALITY;
         } else {
             alterItemQuality(item, getBackstagePassesAppreciationRate(item));
         }
@@ -50,10 +53,10 @@ class GildedRose {
     private void alterItemQuality(Item item, int rate) {
         item.quality += rate;
 
-        if (item.quality > 50) {
-            item.quality = 50;
-        } else if (item.quality < 0) {
-            item.quality = 0;
+        if (item.quality > MAX_QUALITY) {
+            item.quality = MAX_QUALITY;
+        } else if (item.quality < MIN_QUALITY) {
+            item.quality = MIN_QUALITY;
         }
     }
 
@@ -65,7 +68,7 @@ class GildedRose {
                 continue;
             }
 
-            if (item.quality > 0 && item.quality < 50) {
+            if (item.quality > MIN_QUALITY && item.quality < MAX_QUALITY) {
                 switch (item.name) {
                     case GildedRose.AGED_BRIE:
                         appreciateAgedBrie(item);
